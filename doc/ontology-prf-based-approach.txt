@@ -1,0 +1,24 @@
+#1 Precision: 0.37
+#1 Recall: 0.08432236443928215
+#2 Precision: 0.415
+#2 Recall: 0.15742894494500775
+#3 Precision: 0.3999999999999999
+#3 Recall: 0.20334076942884274
+#4 Precision: 0.3925
+#4 Recall: 0.24032934516568383
+#5 Precision: 0.39000000000000007
+#5 Recall: 0.2826640449582079
+#6 Precision: 0.36499999999999994
+#6 Recall: 0.30601301254585267
+#7 Precision: 0.3485714285714286
+#7 Recall: 0.32366208298123206
+#8 Precision: 0.33375
+#8 Recall: 0.3382335915632188
+#9 Precision: 0.31777777777777755
+#9 Recall: 0.36444107473848997
+#10 Precision: 0.2980000000000002
+#10 Recall: 0.37540377636010286
+
+
+Number of retrieved documents whose topics are extended to the query = 5
+NUmber of topics extended to a query = 5

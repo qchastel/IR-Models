@@ -66,4 +66,16 @@ class Query {
 		}
 		return correct/rnums.length;
 	}
+
+	public Double getRecall(Integer[] rnums) {
+		Double correct = 0.0;
+		for (Integer rnum : rnums) {
+			if (relDocs.containsKey(rnum))
+				correct++;
+		}
+		if (nRelDocs==0)
+			return 1.0;
+		else
+			return correct/nRelDocs;
+	}
 }

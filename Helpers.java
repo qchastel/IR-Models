@@ -108,7 +108,7 @@ public class Helpers {
             recording = false;
             topic_recording = false;
           }
-          else if(parts[0].equals("AN") || parts[0].equals("AU") || parts[0].equals("SO") || parts[0].equals("RF") || parts[0].equals("CT")) {
+          else if(parts[0].equals("AN") || parts[0].equals("AU") || parts[0].equals("SO") || parts[0].equals("RF") || parts[0].equals("CT") || parts[0].equals("MN")) {
             recording = false;
             topic_recording = false;
               continue;
@@ -142,7 +142,7 @@ public class Helpers {
                   }
             }
           }
-          else if(parts[0].equals("MJ") || parts[0].equals("MN")) {
+          else if(parts[0].equals("MJ")) {
             recording = false;
             topic_recording = true;
             String[] parts_t = line.split("[ \\.,:]");
@@ -275,7 +275,8 @@ public class Helpers {
                             int i3 = Character.getNumericValue(term.charAt(2));
                             int i4 = Character.getNumericValue(term.charAt(3));
                             score = i1 + i2 + i3 + i4;
-                            query.addRelDoc(rnum, score);
+                            if(score>4)
+                                query.addRelDoc(rnum, score);
                         }
                     }
                 }
@@ -306,7 +307,8 @@ public class Helpers {
                                 int i3 = Character.getNumericValue(term.charAt(2));
                                 int i4 = Character.getNumericValue(term.charAt(3));
                                 score = i1 + i2 + i3 + i4;
-                                query.addRelDoc(rnum, score);
+                                if (score>4)
+                                    query.addRelDoc(rnum, score);
                             }
                             c++;
                         }

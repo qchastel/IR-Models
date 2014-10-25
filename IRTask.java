@@ -49,38 +49,136 @@ public class IRTask {
     curr_size += documents_5.length;
     System.arraycopy(documents_6, 0, documents, curr_size, documents_6.length);
 
+
+    // for (Document document : documents) {
+    // 	String[] topics = document.getTopics();
+    // 	for (String topic : topics) {
+    // 		System.out.println(topic);
+    // 	}
+    // 	System.out.println("*******************************************");
+    // }
+
     /*
     Pass the documents collected to vector space model
      */
 
-    // VectorModel model = new VectorModel(documents, true);
+    VectorModel model = new VectorModel(documents, true);
+    OntologyModel ont_model = new OntologyModel(documents);
     // BooleanModel model = new BooleanModel(documents);
-    ProbabilisticModel model = new ProbabilisticModel(documents);
+    // ProbabilisticModel model = new ProbabilisticModel(documents);
 
     /*
-    Create a query string and pass it to the vector model;
+    Performance of the Vector space model approach
      */
-    Double avg_precision = 0.0;
-    for (Query query : queries) {
-    	String queryString = query.getQueryString();
-    	Integer numRelDocs = query.getNumRelDocs();
+    
+    /*
+	TODO For now I am taking the top *k* of the retrieved docs, where *k* is the number of relevant docs of the query given in groundtruth (Cheating?)
+		Need to update this to a more meaningful way: (1) Emprically set *k* (2) Choose those docs whose normalized score is above a threshold (normalized over all scores)
+ 	*/
+ //    for (int i=1; i<=10; i++) {
+	//     Double avg_precision = 0.0;
+	//     Double avg_recall = 0.0;
+	//     for (Query query : queries) {
+	//     	String queryString = query.getQueryString();
+	//     	Integer numRelDocs = query.getNumRelDocs();
 
-    	SortedMap<Document, Double> results = model.getDocuments(queryString, true);
+	//     	SortedMap<Document, Double> results = model.getDocuments(queryString, true);
 
-    	Vector<Integer> rnums = new Vector<Integer>();
-    	Integer[] rnums_array = new Integer[1];
-    	int count = 0;
-    	for (Document document : results.keySet()) {
-    		if (count>=numRelDocs)
-    			break;
-    		rnums.add(document.getRNum());
-    		count++;
-    	}
+	//     	Vector<Integer> rnums = new Vector<Integer>();
+	//     	Integer[] rnums_array = new Integer[1];
+	//     	int count = 0;
+	//     	Integer numRetDocs = i;
+	//     	for (Document document : results.keySet()) {
+	//     		if (count>=numRetDocs)
+	//     			break;
+	//     		rnums.add(document.getRNum());
+	//     		count++;
+	//     	}
 
-    	avg_precision += query.getPrecision(rnums.toArray(rnums_array));
-    }
-    avg_precision /= 100;
+	//     	avg_precision += query.getPrecision(rnums.toArray(rnums_array));
+	//     	avg_recall += query.getRecall(rnums.toArray(rnums_array));
+	//     }
+	//     avg_precision /= 100;
+	//     avg_recall /= 100;
 
-    System.out.println(avg_precision);
+	//     System.out.println("#"+i+" Precision: "+avg_precision);
+	//     System.out.println("#"+i+" Recall: "+avg_recall);
+	// }
+
+
+    /*
+    Trying the PRF + Ontology approach
+     */
+    for (int i=1; i<=10; i++) {
+	    Double avg_precision = 0.0;
+	    Double avg_recall = 0.0;
+	    for (Query query : queries) {
+	    	String queryString = query.getQueryString();
+	    	Integer numRelDocs = query.getNumRelDocs();
+
+	    	SortedMap<Document, Double> results = model.getDocuments(queryString, true);
+	    	Map<String, Integer> topicFreq = new HashMap<String, Integer>();
+
+	    	Integer numRetDocs = 5;
+	    	int count = 0;
+	    	for (Document document : results.keySet()) {
+	    		if (count >= numRetDocs) {
+	    			break;
+	    		}
+	    		else {
+	    			String[] topics = document.getTopics();
+	    			for (String topic : topics) {
+	    				if (topicFreq.containsKey(topic)) {
+	    					int val = topicFreq.get(topic);
+	    					topicFreq.put(topic, val+1);
+	    				}
+	    				else {
+	    					topicFreq.put(topic, 1);
+	    				}
+	    			}
+	    		}
+	    		count++;
+	    	}
+
+	    	// Take the top 10 most frequently occuring topics
+	    	Integer numTopics = 5;
+	    	String[] retTopics = new String[numTopics];
+	    	SortedMap<String, Integer> topTopics = new TreeMap<String,Integer>( new ValueComparatorTopic( topicFreq ) );
+	    	topTopics.putAll(topicFreq);
+	    	count = 0;
+	    	for (String topic : topTopics.keySet()) {
+	    		if (count>=numTopics) {
+	    			break;
+	    		}
+	    		else {
+	    			retTopics[count] = topic;
+	    		}
+	    		count++;
+	    	}
+
+	    	ont_model.addQueryTopics(retTopics);
+	    	results = ont_model.getDocuments(queryString, true);
+
+	    	Vector<Integer> rnums = new Vector<Integer>();
+	    	Integer[] rnums_array = new Integer[1];
+	    	count = 0;
+	    	numRetDocs = i;
+	    	for (Document document : results.keySet()) {
+	    		if (count>=numRetDocs) {
+	    			break;
+	    		}
+	    		count++;
+	    		rnums.add(document.getRNum());
+	    	}
+	    	avg_precision += query.getPrecision(rnums.toArray(rnums_array));
+	    	avg_recall += query.getRecall(rnums.toArray(rnums_array));
+	    }
+	    avg_precision /= 100;
+	    avg_recall /= 100;
+
+	    System.out.println("#"+i+" Precision: "+ avg_precision);
+	    System.out.println("#"+i+" Recall: "+ avg_recall);
+	}
+
 }
 }
