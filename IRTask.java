@@ -109,43 +109,104 @@ public class IRTask {
     /*
     Trying the PRF + Ontology approach
      */
-    for (int i=1; i<=10; i++) {
-	    Double avg_precision = 0.0;
+ //    for (int i=1; i<=10; i++) {
+	//     Double avg_precision = 0.0;
+	//     Double avg_recall = 0.0;
+	//     for (Query query : queries) {
+	//     	String queryString = query.getQueryString();
+	//     	Integer numRelDocs = query.getNumRelDocs();
+
+	//     	SortedMap<Document, Double> results = model.getDocuments(queryString, true);
+	//     	Map<String, Integer> topicFreq = new HashMap<String, Integer>();
+
+	//     	Integer numRetDocs = 5;
+	//     	int count = 0;
+	//     	for (Document document : results.keySet()) {
+	//     		if (count >= numRetDocs) {
+	//     			break;
+	//     		}
+	//     		else {
+	//     			String[] topics = document.getTopics();
+	//     			for (String topic : topics) {
+	//     				if (topicFreq.containsKey(topic)) {
+	//     					int val = topicFreq.get(topic);
+	//     					topicFreq.put(topic, val+1);
+	//     				}
+	//     				else {
+	//     					topicFreq.put(topic, 1);
+	//     				}
+	//     			}
+	//     		}
+	//     		count++;
+	//     	}
+
+	//     	// Take the top 10 most frequently occuring topics
+	//     	Integer numTopics = 5;
+	//     	String[] retTopics = new String[numTopics];
+	//     	SortedMap<String, Integer> topTopics = new TreeMap<String,Integer>( new ValueComparatorTopic( topicFreq ) );
+	//     	topTopics.putAll(topicFreq);
+	//     	count = 0;
+	//     	for (String topic : topTopics.keySet()) {
+	//     		if (count>=numTopics) {
+	//     			break;
+	//     		}
+	//     		else {
+	//     			retTopics[count] = topic;
+	//     		}
+	//     		count++;
+	//     	}
+
+	//     	ont_model.addQueryTopics(retTopics);
+	//     	results = ont_model.getDocuments(queryString, true);
+
+	//     	Vector<Integer> rnums = new Vector<Integer>();
+	//     	Integer[] rnums_array = new Integer[1];
+	//     	count = 0;
+	//     	numRetDocs = i;
+	//     	for (Document document : results.keySet()) {
+	//     		if (count>=numRetDocs) {
+	//     			break;
+	//     		}
+	//     		count++;
+	//     		rnums.add(document.getRNum());
+	//     	}
+	//     	avg_precision += query.getPrecision(rnums.toArray(rnums_array));
+	//     	avg_recall += query.getRecall(rnums.toArray(rnums_array));
+	//     }
+	//     avg_precision /= 100;
+	//     avg_recall /= 100;
+
+	//     System.out.println("#"+i+" Precision: "+ avg_precision);
+	//     System.out.println("#"+i+" Recall: "+ avg_recall);
+	// }
+	
+	for(int i=1; i<=10; i++) {
 	    Double avg_recall = 0.0;
-	    for (Query query : queries) {
-	    	String queryString = query.getQueryString();
-	    	Integer numRelDocs = query.getNumRelDocs();
+	    Double avg_precision = 0.0;
+		for (Query query : queries)  {
+			String queryString = query.getQueryString();
+			Map<Integer, Integer> relDocs = query.getRelDocs();
+			Map<String, Integer> topicFreq = new HashMap<String, Integer>();
+			for (Integer rnum : relDocs.keySet()) {
+				Document document = documents[rnum-1];
+				String[] topics = document.getTopics();
+				for (String topic : topics) {
+					if (topicFreq.containsKey(topic)) {
+						int val = topicFreq.get(topic);
+						topicFreq.put(topic, val);
+					}
+					else {
+						topicFreq.put(topic, 1);
+					}
+				}
+			}
 
-	    	SortedMap<Document, Double> results = model.getDocuments(queryString, true);
-	    	Map<String, Integer> topicFreq = new HashMap<String, Integer>();
+			SortedMap<String, Integer> topTopics = new TreeMap<String,Integer>( new ValueComparatorTopic( topicFreq ) );
+	    	topTopics.putAll(topicFreq);
 
-	    	Integer numRetDocs = 5;
-	    	int count = 0;
-	    	for (Document document : results.keySet()) {
-	    		if (count >= numRetDocs) {
-	    			break;
-	    		}
-	    		else {
-	    			String[] topics = document.getTopics();
-	    			for (String topic : topics) {
-	    				if (topicFreq.containsKey(topic)) {
-	    					int val = topicFreq.get(topic);
-	    					topicFreq.put(topic, val+1);
-	    				}
-	    				else {
-	    					topicFreq.put(topic, 1);
-	    				}
-	    			}
-	    		}
-	    		count++;
-	    	}
-
-	    	// Take the top 10 most frequently occuring topics
 	    	Integer numTopics = 5;
 	    	String[] retTopics = new String[numTopics];
-	    	SortedMap<String, Integer> topTopics = new TreeMap<String,Integer>( new ValueComparatorTopic( topicFreq ) );
-	    	topTopics.putAll(topicFreq);
-	    	count = 0;
+	    	int count = 0;
 	    	for (String topic : topTopics.keySet()) {
 	    		if (count>=numTopics) {
 	    			break;
@@ -156,13 +217,13 @@ public class IRTask {
 	    		count++;
 	    	}
 
-	    	ont_model.addQueryTopics(retTopics);
-	    	results = ont_model.getDocuments(queryString, true);
+			ont_model.addQueryTopics(retTopics);
+	    	SortedMap<Document, Double> results = ont_model.getDocuments(queryString, true);
 
 	    	Vector<Integer> rnums = new Vector<Integer>();
 	    	Integer[] rnums_array = new Integer[1];
 	    	count = 0;
-	    	numRetDocs = i;
+	    	Integer numRetDocs = i;
 	    	for (Document document : results.keySet()) {
 	    		if (count>=numRetDocs) {
 	    			break;
@@ -171,9 +232,9 @@ public class IRTask {
 	    		rnums.add(document.getRNum());
 	    	}
 	    	avg_precision += query.getPrecision(rnums.toArray(rnums_array));
-	    	avg_recall += query.getRecall(rnums.toArray(rnums_array));
-	    }
-	    avg_precision /= 100;
+	    	avg_recall += query.getRecall(rnums.toArray(rnums_array));    	
+		}
+		avg_precision /= 100;
 	    avg_recall /= 100;
 
 	    System.out.println("#"+i+" Precision: "+ avg_precision);
